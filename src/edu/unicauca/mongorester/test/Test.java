@@ -17,23 +17,17 @@ public class Test {
     ClientConfig config = new DefaultClientConfig();
     Client client = Client.create(config);
     WebResource service = client.resource(getBaseURI());
-    // Fluent interfaces
-    System.out.println(service.accept(MediaType.TEXT_PLAIN).get(ClientResponse.class).toString());
-    // Get plain text
-    System.out.println("DB disponibles: "+service.accept(MediaType.TEXT_PLAIN).get(String.class));
-    // Get XML
-    System.out.println(service.accept(MediaType.TEXT_XML).get(String.class));
-    // The HTML
-    System.out.println(service.accept(MediaType.TEXT_HTML).get(String.class));
-    // POST dinamyc information path and attr
+
     
     Form f = new Form();
     f.add("firstAttr", "atributo 1");
     f.add("secondAttr", "atributo 2");
     
-    System.out.println("Colecciones de la DB test: "+service.path("/test").accept(MediaType.TEXT_PLAIN).get(String.class));
+    System.out.println("DB disponibles: "+service.accept(MediaType.TEXT_PLAIN).get(String.class));
+    System.out.println("Colecciones de la DB test: "+service.path("/test_").accept(MediaType.TEXT_PLAIN).get(String.class));
+    System.out.println("Documentos de la collección test: "+service.path("/test/test").accept(MediaType.TEXT_PLAIN).get(String.class));
+    System.out.println("Documento con id=1 de la collección test: "+service.path("/test/test/1").accept(MediaType.TEXT_PLAIN).get(String.class));
     
-    System.out.println(service.path("/perro1/gato1").accept(MediaType.TEXT_PLAIN).post(String.class,f));
     
 
   }

@@ -1,5 +1,7 @@
 package edu.unicauca.mongorester.web.container;
 
+import java.util.Set;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -11,24 +13,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import edu.unicauca.mongorester.controller.BDMainController;
+import edu.unicauca.mongorester.miscellaneus.BackResponse;
 import edu.unicauca.mongorester.miscellaneus.Log;
 
-
-
-// Plain old Java Object it does not extend as class or implements 
-// an interface
-
-// The class registers its methods for the HTTP GET request using the @GET annotation. 
-// Using the @Produces annotation, it defines that it can deliver several MIME types,
-// text, XML and HTML. 
-
-// The browser requests per default the HTML MIME type.
-
-//Sets the path to base URL + /hello
 @Path("/")
 public class Querier {
 
-	// This method is called if TEXT_PLAIN is request
+	/********************************************************** GETS *********************************************************************/
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
 	public String list_databases() {
@@ -41,39 +32,41 @@ public class Querier {
 	@Path("/{db}")
 	@Produces(MediaType.TEXT_PLAIN)
 	public String list_coll_by_db(@PathParam("db") String db) {
-		String response = BDMainController.get_colls_by_db(db).toString();
+		Set<String> colls= BDMainController.get_colls_by_db(db);
+		if (colls==null){
+			return new BackResponse(1,"Base de datos: ("+db+") no encontrada").to_json();
+		}
+		String response = colls.toString();
 		Log.print(response);
 		return response;
 	}
-
-	// This method is called if XML is request
+	
 	@GET
-	@Produces(MediaType.TEXT_XML)
-	public String sayXMLHello() {
-		return "<?xml version=\"1.0\"?>" + "<hello> Hello Jersey" + "</hello>";
-	}
-
-	// This method is called if HTML is request
-	@GET
-	@Produces(MediaType.TEXT_HTML)
-	public String sayHtmlHello() {
-		return "<html> " + "<title>" + "Hello Jersey" + "</title>"
-				+ "<body><h1>" + "Hello Jersey" + "</body></h1>" + "</html> ";
-	}
-
-	@POST
-	@Path("/firstPath")
+	@Path("/{db}/{coll}")
 	@Produces(MediaType.TEXT_PLAIN)
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public String test(@FormParam("firstAttr") String firstAttr,@FormParam("secondAttr") String secondAttr) {
-			return "Hello "+ firstAttr +" "+secondAttr;
+	public String get_coll_by_db(@PathParam("db") String db,@PathParam("coll") String coll) {
+		String response = BDMainController.get_coll_by_name(db, coll).toString();
+		Log.print(response);
+		return response;
 	}
 	
-	@POST
-	@Path("/{firstPath}/{secondPath}")
+	@GET
+	@Path("/{db}/{coll}/{id}")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String test(@PathParam("firstPath") String firstPath,@PathParam("secondPath") String secondPath,@FormParam("firstAttr") String firstAttr,@FormParam("secondAttr") String secondAttr) {
-		return "Hello Paths: "+firstPath+" "+ secondPath +" Attrs: " +firstAttr +" "+secondAttr;
+	public String get_doc_by_db(@PathParam("db") String db,@PathParam("coll") String coll, @PathParam("id") Long id) {
+		String response = BDMainController.get_doc_by_id(db, coll, id).toString();
+		Log.print(response);
+		return response;
 	}
+	
+	/********************************************************** POSTS ********************************************************************/
+	@POST
+	@Path("/{db}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String create_db(@PathParam("db") String db) {
+			return "Hello "+ db ;
+	}
+	
+	/*************************************************************************************************************************************/
 
 }
