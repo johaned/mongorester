@@ -10,6 +10,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import edu.unicauca.mongorester.controller.BDMainController;
+import edu.unicauca.mongorester.miscellaneus.Log;
+
 
 
 // Plain old Java Object it does not extend as class or implements 
@@ -22,14 +25,25 @@ import javax.ws.rs.core.MediaType;
 // The browser requests per default the HTML MIME type.
 
 //Sets the path to base URL + /hello
-@Path("/querier")
+@Path("/")
 public class Querier {
 
 	// This method is called if TEXT_PLAIN is request
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
-	public String sayPlainTextHello() {
-		return "Hello Jersey";
+	public String list_databases() {
+		String response = BDMainController.get_databases().toString();
+		Log.print(response);
+		return response;
+	}
+	
+	@GET
+	@Path("/{db}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String list_coll_by_db(@PathParam("db") String db) {
+		String response = BDMainController.get_colls_by_db(db).toString();
+		Log.print(response);
+		return response;
 	}
 
 	// This method is called if XML is request

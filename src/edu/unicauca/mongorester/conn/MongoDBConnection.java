@@ -31,6 +31,10 @@ public class MongoDBConnection {
 		return instance;
 	}
 	
+	public MongoClient getMc() {
+		return mc;
+	}
+
 	public WriteResult insert_doc(DBObject dbo){
 		return coll.insert(dbo);
 	}
