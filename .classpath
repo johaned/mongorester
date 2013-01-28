@@ -13,5 +13,7 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="lib" path="/home/johaned/workspace/libs/gson-2.2.2.jar"/>
+	<classpathentry kind="lib" path="/home/johaned/workspace/libs/mongo-2.10.0.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
