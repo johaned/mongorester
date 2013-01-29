@@ -34,9 +34,6 @@ public class Querier {
 	@Produces(MediaType.TEXT_PLAIN)
 	public String list_coll_by_db(@PathParam("db") String db) {
 		Set<String> colls= BDMainController.get_colls_by_db(db);
-		if (colls==null){
-			return new BackResponse(Template.DB_NO_FOUND,"Base de datos: ("+db+") no encontrada").to_json();
-		}
 		String response = colls.toString();
 		Log.print(response);
 		return response;
@@ -70,6 +67,24 @@ public class Querier {
 			return response;
 	}
 	
+	@POST
+	@Path("/{db}/{coll}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String create_coll_in_db(@PathParam("db") String db,@PathParam("coll") String coll) {
+			String response = BDMainController.create_coll_in_db(db, coll).to_json();
+			Log.print(response);
+			return response;
+	}
+	
+	/********************************************************** DELETE *******************************************************************/
+	@DELETE
+	@Path("/{db}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String delete_db(@PathParam("db") String db) {
+			String response = BDMainController.delete_db(db).to_json();
+			Log.print(response);
+			return response;
+	}	
 	/*************************************************************************************************************************************/
 
 }

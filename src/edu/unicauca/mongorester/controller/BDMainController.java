@@ -2,12 +2,15 @@ package edu.unicauca.mongorester.controller;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
+import com.sun.jersey.server.impl.template.TemplateViewProcessor;
 
 import edu.unicauca.mongorester.conn.MongoDBConnection;
 import edu.unicauca.mongorester.miscellaneus.BackResponse;
@@ -19,46 +22,55 @@ public class BDMainController {
 	private static MongoDBConnection mdbc;
 
 	public static List<String> get_databases() {
+		ArrayList<String> list = new ArrayList<String>();
 		try {
 			mdbc = MongoDBConnection.getInstance();
 			return mdbc.getMc().getDatabaseNames();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			list.add(new BackResponse(Template.ERROR_UNCLASIFIED, e.getMessage()).to_json());
 		}
-		return null;
+		return list;
 	}
 
 	public static Set<String> get_colls_by_db(String db) {
+		ArrayList<String> list = new ArrayList<String>();
+		Set<String> response;
 		if(!isDB(db)){
 			Log.print("DB don't exist");
-			return null;
+			list.add(new BackResponse(Template.DB_NO_FOUND, "Base de datos no encontrada").to_json());
+			response = new HashSet<String>(list);
+			return response;
 		}
 		try {
 			mdbc = MongoDBConnection.getInstance();
 			return mdbc.getMc().getDB(db).getCollectionNames();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			list.add(new BackResponse(Template.ERROR_UNCLASIFIED, e.getMessage()).to_json());
+			response = new HashSet<String>(list);
+			return response;
 		}
-		return null;
+		
 	}
 
-	public static DBCollection get_coll_by_name(String db, String coll) {
+	public static String get_coll_by_name(String db, String coll) {
 		if(!isCollInDB(db, coll)){
 			Log.print("Collection don't exist in DB");
-			return null;
+			return new BackResponse(Template.COLL_NO_FOUND, "Collection don't exist in DB").to_json();
 		}
 		try {
 			mdbc = MongoDBConnection.getInstance();
-			return mdbc.getMc().getDB(db).getCollection(coll);
+			return mdbc.getMc().getDB(db).getCollection(coll).toString();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			return new BackResponse(Template.ERROR_UNCLASIFIED, e.getMessage()).to_json();
 		}
-		return null;
 	}
 
 	public static BasicDBObject get_doc_by_id(String db, String coll, Long id) {
 		DBCursor cursor;
-		BasicDBObject dbo=new BasicDBObject();
+		BasicDBObject dbo;
 		try {
 			mdbc = MongoDBConnection.getInstance();
 			cursor = mdbc.getMc().getDB(db).getCollection(coll).find(new BasicDBObject("id", id));
@@ -66,10 +78,14 @@ public class BDMainController {
 				dbo = (BasicDBObject) cursor.next();
 				return dbo;
 			}
+			dbo = new BasicDBObject().append("code", Template.COLL_NO_FOUND).append("comments", "Documento por Id no encontrado");
+			return dbo;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			dbo = new BasicDBObject().append("code", Template.ERROR_UNCLASIFIED).append("comments", e.getMessage());
+			return dbo;
 		} 
-		return null;
+		
 	}
 	
 	public static BackResponse create_db(String db) {
@@ -78,8 +94,25 @@ public class BDMainController {
 		}
 		try {
 			mdbc = MongoDBConnection.getInstance();
-			mdbc.getMc().getDB(db);
+			mdbc.getMc().getDB(db).createCollection("test_", new BasicDBObject().append("test_", "_"));
+			
 			return new BackResponse(Template.DB_CREATED,"Base de datos: ("+db+") creada");
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return new BackResponse(Template.ERROR_UNCLASIFIED,e.getMessage());
+		} 
+		
+	}
+	
+	public static BackResponse create_coll_in_db(String db, String coll) {
+		if(!isCollInDB(db, coll)){
+			return new BackResponse(Template.COLL_NO_FOUND,"Coleccion: ("+coll+") no existe en la DB");
+		}
+		try {
+			mdbc = MongoDBConnection.getInstance();
+			mdbc.getMc().getDB(db).createCollection(coll, new BasicDBObject().append("test_", "_"));
+			
+			return new BackResponse(Template.COLL_CREATED,"Coleccion: ("+coll+") creada");
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			return new BackResponse(Template.ERROR_UNCLASIFIED,e.getMessage());

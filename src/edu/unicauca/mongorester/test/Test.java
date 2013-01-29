@@ -28,7 +28,7 @@ public class Test {
     System.out.println("Documentos de la collección test: "+service.path("/test/test").accept(MediaType.TEXT_PLAIN).get(String.class));
     System.out.println("Documento con id=1 de la collección test: "+service.path("/test/test/1").accept(MediaType.TEXT_PLAIN).get(String.class));
     System.out.println("Creacion de BD test_: "+service.path("/test_").accept(MediaType.TEXT_PLAIN).post(String.class));
-    
+    //System.out.println("Creacion de BD test_: "+service.path("/test_").accept(MediaType.TEXT_PLAIN).delete(String.class));
 
   }
 
