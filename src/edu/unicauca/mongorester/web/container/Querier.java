@@ -15,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import edu.unicauca.mongorester.controller.BDMainController;
 import edu.unicauca.mongorester.miscellaneus.BackResponse;
 import edu.unicauca.mongorester.miscellaneus.Log;
+import edu.unicauca.mongorester.model.Template;
 
 @Path("/")
 public class Querier {
@@ -34,7 +35,7 @@ public class Querier {
 	public String list_coll_by_db(@PathParam("db") String db) {
 		Set<String> colls= BDMainController.get_colls_by_db(db);
 		if (colls==null){
-			return new BackResponse(1,"Base de datos: ("+db+") no encontrada").to_json();
+			return new BackResponse(Template.DB_NO_FOUND,"Base de datos: ("+db+") no encontrada").to_json();
 		}
 		String response = colls.toString();
 		Log.print(response);
@@ -64,7 +65,9 @@ public class Querier {
 	@Path("/{db}")
 	@Produces(MediaType.TEXT_PLAIN)
 	public String create_db(@PathParam("db") String db) {
-			return "Hello "+ db ;
+			String response = BDMainController.create_db(db).to_json();
+			Log.print(response);
+			return response;
 	}
 	
 	/*************************************************************************************************************************************/

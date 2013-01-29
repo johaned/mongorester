@@ -4,10 +4,10 @@ import com.google.gson.Gson;
 
 public class BackResponse {
 
-	private int code;
+	private String code;
 	private String comments;
 	
-	public BackResponse(int code, String comments) {
+	public BackResponse(String code, String comments) {
 		super();
 		this.code = code;
 		this.comments = comments;
@@ -16,10 +16,10 @@ public class BackResponse {
 		super();
 	}
 	
-	public int getCode() {
+	public String getCode() {
 		return code;
 	}
-	public void setCode(int code) {
+	public void setCode(String code) {
 		this.code = code;
 	}
 	public String getComments() {
