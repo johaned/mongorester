@@ -105,8 +105,13 @@ public class BDMainController {
 	}
 	
 	public static BackResponse create_coll_in_db(String db, String coll) {
-		if(!isCollInDB(db, coll)){
-			return new BackResponse(Template.COLL_NO_FOUND,"Coleccion: ("+coll+") no existe en la DB");
+		
+		if(isCollInDB(db, coll)){
+			return new BackResponse(Template.COLL_ALREADY_EXIST,"Coleccion: ("+coll+") ya existe en la DB");
+		}else{
+			if(!isDB(db)){
+				return new BackResponse(Template.DB_NO_FOUND,"BD: ("+db+") no existe");
+			}
 		}
 		try {
 			mdbc = MongoDBConnection.getInstance();

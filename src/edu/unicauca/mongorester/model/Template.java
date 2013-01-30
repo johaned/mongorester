@@ -10,6 +10,7 @@ public class Template {
 	
 	//Query warnings
 	public static String DB_ALREADY_EXIST="W1";
+	public static String COLL_ALREADY_EXIST="W2";
 
 	//Query Success
 	public static String DB_CREATED="S1";
