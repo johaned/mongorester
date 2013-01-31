@@ -6,10 +6,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bson.BSON;
+import org.bson.BSONLazyDecoder;
+
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import com.sun.jersey.server.impl.template.TemplateViewProcessor;
 
 import edu.unicauca.mongorester.conn.MongoDBConnection;
@@ -61,7 +70,7 @@ public class BDMainController {
 		}
 		try {
 			mdbc = MongoDBConnection.getInstance();
-			return mdbc.getMc().getDB(db).getCollection(coll).toString();
+			return new Gson().toJson(mdbc.getMc().getDB(db).getCollection(coll).find().toArray(2));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			return new BackResponse(Template.ERROR_UNCLASIFIED, e.getMessage()).to_json();
@@ -78,7 +87,7 @@ public class BDMainController {
 				dbo = (BasicDBObject) cursor.next();
 				return dbo;
 			}
-			dbo = new BasicDBObject().append("code", Template.COLL_NO_FOUND).append("comments", "Documento por Id no encontrado");
+			dbo = new BasicDBObject().append("code", Template.COLL_NO_FOUND).append("comments", "El doc con id ("+id+") no existe en la coll ("+coll+") de la BD ("+db+")");
 			return dbo;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -115,7 +124,7 @@ public class BDMainController {
 		}
 		try {
 			mdbc = MongoDBConnection.getInstance();
-			mdbc.getMc().getDB(db).createCollection(coll, new BasicDBObject().append("test_", "_"));
+			mdbc.getMc().getDB(db).createCollection(coll, new BasicDBObject().append("_", "_"));
 			
 			return new BackResponse(Template.COLL_CREATED,"Coleccion: ("+coll+") creada");
 		} catch (UnknownHostException e) {
@@ -141,6 +150,89 @@ public class BDMainController {
 		
 	}
 	
+	public static BackResponse delete_coll_in_db(String db, String coll) {
+		if(!isCollInDB(db, coll)){
+			Log.print("Coll don't exist in DB");
+			return new BackResponse(Template.COLL_NO_FOUND,"Coleccion: ("+coll+") no encontrada en BD: ("+db+")");
+		}
+		try {
+			mdbc = MongoDBConnection.getInstance();
+			mdbc.getMc().getDB(db).getCollection(coll).drop();
+			return new BackResponse(Template.COLL_DELETED,"Coleccion: ("+coll+") borrada en BD: ("+db+")");
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return new BackResponse(Template.ERROR_UNCLASIFIED,e.getMessage());
+		} 
+		
+	}
+	
+	public static BackResponse create_doc_in_coll(String db, String coll, String doc){
+		if(!isCollInDB(db, coll)){
+			Log.print("Coll don't exist in DB");
+			return new BackResponse(Template.COLL_NO_FOUND,"Coleccion: ("+coll+") no encontrada en BD: ("+db+")");
+		}
+		try {
+			mdbc = MongoDBConnection.getInstance();
+			DBCollection coll_ = mdbc.getMc().getDB(db).getCollection(coll);
+			DBObject dbo = (DBObject)JSON.parse(doc);
+			Object id = dbo.get("id");
+			boolean isId=false;
+			if(id==null){
+				//return new BackResponse(Template.ID_FIELD_NO_FOUND,"El campo (id) no fue encontrado en el documento a insertar");
+				Log.print("El campo (id) no fue encontrado, procediendo a crear uno con el consecutivo");
+			}
+			if(!(coll_.find(new BasicDBObject("id",id)).size()==0)){
+				return new BackResponse(Template.ID_FIELD_ALREADY_EXIST,"El doc con id ("+id+") ya existe en la coll ("+coll+") de la BD ("+db+")");
+			}			
+			mdbc.getMc().getDB(db).getCollection(coll).insert(dbo);
+			return new BackResponse(Template.DOC_CREATED,"documento: ("+doc+") en la coleccion:("+coll+") en BD: ("+db+")");
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return new BackResponse(Template.ERROR_UNCLASIFIED,e.getMessage());
+		}
+	}
+	
+	public static BackResponse create_doc_in_coll(String db, String coll, String doc, Long id){
+		if(!isCollInDB(db, coll)){
+			Log.print("Coll don't exist in DB");
+			return new BackResponse(Template.COLL_NO_FOUND,"Coleccion: ("+coll+") no encontrada en BD: ("+db+")");
+		}
+		try {
+			mdbc = MongoDBConnection.getInstance();
+			DBCollection coll_ = mdbc.getMc().getDB(db).getCollection(coll);
+			DBObject dbo = (DBObject)JSON.parse(doc);
+			dbo.put("id", id);
+			if(!(coll_.find(new BasicDBObject("id",id)).size()==0)){
+				return new BackResponse(Template.ID_FIELD_ALREADY_EXIST,"El doc con id ("+id+") ya existe en la coll ("+coll+") de la BD ("+db+")");
+			}			
+			mdbc.getMc().getDB(db).getCollection(coll).insert(dbo);
+			return new BackResponse(Template.DOC_CREATED,"documento: ("+doc+") en la coleccion:("+coll+") en BD: ("+db+")");
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return new BackResponse(Template.ERROR_UNCLASIFIED,e.getMessage());
+		}
+	}
+	
+	public static BackResponse delete_doc_in_coll(String db, String coll, Long id){
+		if(!isCollInDB(db, coll)){
+			Log.print("Coll don't exist in DB");
+			return new BackResponse(Template.COLL_NO_FOUND,"Coleccion: ("+coll+") no encontrada en BD: ("+db+")");
+		}
+		try {
+			mdbc = MongoDBConnection.getInstance();
+			DBCollection coll_ = mdbc.getMc().getDB(db).getCollection(coll);
+			//DBCursor find = coll_.find(new BasicDBObject("id",id));
+			if(coll_.find(new BasicDBObject("id",id)).size()==0){
+				return new BackResponse(Template.DOC_NO_FOUND,"El doc con id ("+id+") no existe en la coll ("+coll+") de la BD ("+db+")");
+			}			
+			mdbc.getMc().getDB(db).getCollection(coll).findAndRemove(new BasicDBObject("id",id));
+			return new BackResponse(Template.DOC_REMOVED,"documento con id: ("+id+") removido en la coleccion:("+coll+") en BD: ("+db+")");
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return new BackResponse(Template.ERROR_UNCLASIFIED,e.getMessage());
+		}
+	}
+	
 	/************* Others *************/
 	
 	private static boolean isDB(String db){
@@ -155,12 +247,7 @@ public class BDMainController {
 	
 	private static boolean isCollInDB(String db, String coll){
 		if(isDB(db)){
-			Set<String> colls = get_colls_by_db(db);
-			for (String coll_ : colls) {
-				if(coll_.equals(coll)){
-					return true;
-				}		
-			}
+			return mdbc.getMc().getDB(db).collectionExists(coll);
 		}else{
 			Log.print("DB don't exist");
 		}
