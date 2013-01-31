@@ -24,27 +24,36 @@ public class Test {
     
     /**BDs Disponibles**/ 
     System.out.println("BD disponibles: "+service.accept(MediaType.TEXT_PLAIN).get(String.class));
+    
     /**Coleciones disponibles en la BD asociada**/
     System.out.println("Colecciones de la BD (test): "+service.path("/test_").accept(MediaType.TEXT_PLAIN).get(String.class));
+    
     /**Documentos en la colecion asociada**/
     System.out.println("Documentos de la coleccion (test) de la BD (test): "+service.path("/test_/coll_").accept(MediaType.TEXT_PLAIN).get(String.class));
+    
     /**Documento por ID en la colecion asociada**/
     System.out.println("Documento con id=1 de la coleccion (test) en la BD (test): "+service.path("/test/test/1").accept(MediaType.TEXT_PLAIN).get(String.class));
+    
     /**Creacion de una BD**/
-    //System.out.println("Creacion de BD (test_): "+service.path("/test_").accept(MediaType.TEXT_PLAIN).post(String.class));
+    System.out.println("Creacion de BD (test_): "+service.path("/test_").accept(MediaType.TEXT_PLAIN).post(String.class));
+    
     /**Eliminacion de una BD (No aconsejable)**/
     //System.out.println("Eliminacion de BD (test_): "+service.path("/test_").accept(MediaType.TEXT_PLAIN).delete(String.class));
+    
     /**Creacion de una colecion dentro de una BD**/
-    //System.out.println("Creacion de la colecion (coll_) en la BD (test_): "+service.path("/test_/coll_").accept(MediaType.TEXT_PLAIN).post(String.class));
+    System.out.println("Creacion de la colecion (coll_) en la BD (test_): "+service.path("/test_/coll_").accept(MediaType.TEXT_PLAIN).post(String.class));
+    
     /**Eliminación de una colecion dentro de una BD**/
     //System.out.println("Eliminacion de la colecion coll_: "+service.path("/test_/coll_").accept(MediaType.TEXT_PLAIN).delete(String.class));
-    /**Creacion de un doc dentro de la coleccion (test_) de la BD (test_)**/
+    
+    /**Creacion de un doc dentro de la coleccion (test_) de la BD (test_) con un ID especifico**/
     f.clear();
-    long id = 1;
+    long id = -1;
     f.add("doc",(new TestObject(id,"test","test description",new Date(System.currentTimeMillis()))).to_json());
-    //System.out.println("Creacion de un doc en la colecion coll_: "+service.path("/test_/coll_").accept(MediaType.TEXT_PLAIN).put(String.class,f));
-    /**Eliminación de un doc dentro de una coll**/
-    //System.out.println("Documento con id=1 de la coleccion (coll_) en la BD (test_): "+service.path("/test_/coll_/1").accept(MediaType.TEXT_PLAIN).delete(String.class));
+    //System.out.println("Creacion de un doc en la colecion coll_: "+service.path("/test_/coll_/"+id).accept(MediaType.TEXT_PLAIN).post(String.class,f));
+    
+    /**Eliminación de un doc por ID dentro de una coll**/
+    //System.out.println("Documento con id=1 de la coleccion (coll_) en la BD (test_): "+service.path("/test_/coll_/-1").accept(MediaType.TEXT_PLAIN).delete(String.class));
     
     
     

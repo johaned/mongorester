@@ -14,9 +14,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import edu.unicauca.mongorester.controller.BDMainController;
-import edu.unicauca.mongorester.miscellaneus.BackResponse;
 import edu.unicauca.mongorester.miscellaneus.Log;
-import edu.unicauca.mongorester.model.Template;
 
 @Path("/")
 public class Querier {
@@ -77,7 +75,7 @@ public class Querier {
 			return response;
 	}
 	
-	@PUT
+	@POST
 	@Path("/{db}/{coll}/{id}")
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -86,7 +84,7 @@ public class Querier {
 			Log.print(response);
 			return response;
 	}
-	
+		
 	/*********************************************************** PUT *********************************************************************/
 	@PUT
 	@Path("/{db}/{coll}")
