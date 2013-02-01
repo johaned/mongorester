@@ -235,8 +235,12 @@ public class BDMainController {
 			try {
 				mdbc = MongoDBConnection.getInstance();
 				DBCollection coll_ = mdbc.getMc().getDB(db).getCollection(coll);
-				MaxKey mk = new MaxKey();
+				//MaxKey mk = new MaxKey();
 				//coll_.distinct("id").;
+				DBObject fields = new BasicDBObject("id",1);
+				fields.put("id_", 0);
+				DBObject projection = new BasicDBObject("$project",fields);
+				
 				
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
