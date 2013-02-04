@@ -32,6 +32,7 @@ public class Querier {
 	@Path("/{db}")
 	@Produces(MediaType.TEXT_PLAIN)
 	public String list_coll_by_db(@PathParam("db") String db) {
+		Log.print("entre! "+db);
 		Set<String> colls= BDMainController.get_colls_by_db(db);
 		String response = colls.toString();
 		Log.print(response);

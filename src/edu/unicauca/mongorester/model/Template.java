@@ -20,5 +20,8 @@ public class Template {
 	public static String COLL_CREATED = "S3";
 	public static String COLL_DELETED="S4";
 	public static String DOC_CREATED= "S5";
-	public static final String DOC_REMOVED ="S6";
+	public static  String DOC_REMOVED ="S6";
+	
+	//Query Info
+	public static String DOC_CREATED_ID="I1";
 }

@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="jquery-1.9.0.js"></script>
+<script type="text/javascript" src="json.js"></script>
+<title>Test Mongorester</title>
+</head>
+<body>
+	<script type="text/javascript">
+		TestObject = function() {
+			this.id = 0;
+			this.name = "";
+			this.desc = "";
+			this.tmSt = new Date(Date.now());
+		}
+		
+		to = new TestObject();
+		to.id=0;
+		to.name="Test_JS";
+		to.desc="Test JS client insert";
+		jsonStr = JSON.stringify(to);
+		date = new Date(Date.now());
+		
+
+		console.debug(date);
+		
+		domain = "http://localhost:8080/mongorester";
+		bd = "test_";
+		coll = "coll_";
+		id = 7;
+		
+		$.ajax({
+			url : domain + "/rest/" + bd + "/" + coll + "/" + id,
+			accepts : {
+				text : 'text/plain'
+			},
+			type : "GET",
+			data: "doc="+jsonStr,
+			cache : true,
+			success : function(response) {
+				//console.log(response);
+				div = document.createElement("div");
+				div.innerHTML = response;
+				document.body.appendChild(div);
+
+			}
+		});
+		
+	</script>
+</body>
+</html>

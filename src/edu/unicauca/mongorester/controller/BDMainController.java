@@ -2,9 +2,11 @@ package edu.unicauca.mongorester.controller;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
 import org.bson.BSON;
 import org.bson.BSONLazyDecoder;
@@ -15,6 +17,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -49,8 +52,7 @@ public class BDMainController {
 		Set<String> response;
 		if (!isDB(db)) {
 			Log.print("DB don't exist");
-			list.add(new BackResponse(Template.DB_NO_FOUND,
-					"Base de datos no encontrada").to_json());
+			list.add(new BackResponse(Template.DB_NO_FOUND,	"Base de datos no encontrada").to_json());
 			response = new HashSet<String>(list);
 			return response;
 		}
@@ -70,13 +72,11 @@ public class BDMainController {
 	public static String get_coll_by_name(String db, String coll) {
 		if (!isCollInDB(db, coll)) {
 			Log.print("Collection don't exist in DB");
-			return new BackResponse(Template.COLL_NO_FOUND,
-					"Collection don't exist in DB").to_json();
+			return new BackResponse(Template.COLL_NO_FOUND,"Collection don't exist in DB").to_json();
 		}
 		try {
 			mdbc = MongoDBConnection.getInstance();
-			return new Gson().toJson(mdbc.getMc().getDB(db).getCollection(coll)
-					.find().toArray(2));
+			return new Gson().toJson(mdbc.getMc().getDB(db).getCollection(coll).find().toArray(10));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			return new BackResponse(Template.ERROR_UNCLASIFIED, e.getMessage())
@@ -95,10 +95,7 @@ public class BDMainController {
 				dbo = (BasicDBObject) cursor.next();
 				return dbo;
 			}
-			dbo = new BasicDBObject().append("code", Template.COLL_NO_FOUND)
-					.append("comments",
-							"El doc con id (" + id + ") no existe en la coll ("
-									+ coll + ") de la BD (" + db + ")");
+			dbo = new BasicDBObject().append("code", Template.COLL_NO_FOUND).append("comments",	"El doc con id (" + id + ") no existe en la coll ("+ coll + ") de la BD (" + db + ")");
 			return dbo;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -117,11 +114,7 @@ public class BDMainController {
 		}
 		try {
 			mdbc = MongoDBConnection.getInstance();
-			mdbc.getMc()
-					.getDB(db)
-					.createCollection("test_",
-							new BasicDBObject().append("test_", "_"));
-
+			mdbc.getMc().getDB(db).createCollection("test_",new BasicDBObject().append("test_", "_"));
 			return new BackResponse(Template.DB_CREATED, "Base de datos: ("
 					+ db + ") creada");
 		} catch (UnknownHostException e) {
@@ -235,17 +228,25 @@ public class BDMainController {
 			try {
 				mdbc = MongoDBConnection.getInstance();
 				DBCollection coll_ = mdbc.getMc().getDB(db).getCollection(coll);
-				//MaxKey mk = new MaxKey();
-				//coll_.distinct("id").;
 				DBObject fields = new BasicDBObject("id",1);
-				fields.put("id_", 0);
 				DBObject projection = new BasicDBObject("$project",fields);
-				
-				
+				DBObject groupFields = new BasicDBObject( "_id", "maximo");
+				groupFields.put("max", new BasicDBObject( "$max", "$id"));
+				DBObject group = new BasicDBObject("$group", groupFields);
+				AggregationOutput output = coll_.aggregate( projection, group );
+				List <Object> result = (List) output.getCommandResult().toMap().get("result");
+				HashMap<String, Long> maximo = (HashMap<String, Long>) result.get(0);
+				Log.print("Maximo indice: "+maximo.get("max"));
+				DBObject dbo = (DBObject) JSON.parse(doc);
+				dbo.put("id", maximo.get("max")+1);
+				Log.print("DBObject " + dbo.toString());
+				coll_.insert(dbo);
+				return new BackResponse(Template.DOC_CREATED_ID, "ID_CREATED_DOC:"+(maximo.get("max")+1)+",COLL:"+coll+",DB:"+db);
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
+				return new BackResponse(Template.ERROR_UNCLASIFIED, e.getMessage());
 			}
-			return new BackResponse(Template.COLL_NO_FOUND, "...");
+			
 		} else {
 			try {
 				mdbc = MongoDBConnection.getInstance();
@@ -254,8 +255,7 @@ public class BDMainController {
 				dbo.put("id", id);
 				Log.print("DBObject" + dbo.toString());
 				if (!(coll_.find(new BasicDBObject("id", id)).size() == 0)) {
-					return new BackResponse(Template.ID_FIELD_ALREADY_EXIST,
-							"El doc con id (" + id + ") ya existe en la coll ("+ coll + ") de la BD (" + db + ")");
+					return new BackResponse(Template.ID_FIELD_ALREADY_EXIST,"El doc con id (" + id + ") ya existe en la coll ("+ coll + ") de la BD (" + db + ")");
 				}
 				mdbc.getMc().getDB(db).getCollection(coll).insert(dbo);
 				return new BackResponse(Template.DOC_CREATED, "documento: ("+ doc + ") en la coleccion:(" + coll + ") en BD: ("+ db + ")");
