@@ -76,7 +76,7 @@ public class BDMainController {
 		}
 		try {
 			mdbc = MongoDBConnection.getInstance();
-			return new Gson().toJson(mdbc.getMc().getDB(db).getCollection(coll).find().toArray(10));
+			return new Gson().toJson(mdbc.getMc().getDB(db).getCollection(coll).find().toArray());
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			return new BackResponse(Template.ERROR_UNCLASIFIED, e.getMessage())
